@@ -6,12 +6,20 @@
   <title>Моя RPG</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body { font-family: sans-serif; background: #1a1a2e; color: #eee; padding: 20px; }
+    body { font-family: sans-serif; background: #1a1a2e; color: #eee; padding: 15px; }
     .screen { display: none; }
     .screen.active { display: block; }
-    button { padding: 12px; margin: 5px; border: none; border-radius: 8px; background: #4a4a8a; color: white; font-size: 16px; }
-    .hp-bar { background: #333; height: 20px; border-radius: 10px; overflow: hidden; margin: 5px 0; }
+    button { padding: 10px; margin: 4px 0; border: none; border-radius: 8px; background: #4a4a8a; color: white; font-size: 15px; width: 100%; }
+    button:active { background: #6a6aaa; }
+    button.location-btn { background: #2e5a3e; }
+    button.location-btn.active-loc { background: #4e9a6e; }
+    button.monster-btn { background: #6a3e2e; }
+    .hp-bar { background: #333; height: 18px; border-radius: 9px; overflow: hidden; margin: 5px 0; }
     .hp-fill { background: #e74c3c; height: 100%; transition: width 0.3s; }
+    .card { background: #2a2a4e; padding: 12px; border-radius: 10px; margin-bottom: 12px; }
+    h2 { margin: 8px 0; font-size: 18px; }
+    h3 { margin: 6px 0; font-size: 15px; color: #aaa; }
+    .log { font-size: 13px; color: #ccc; min-height: 40px; }
   </style>
 </head>
 <body>
@@ -24,24 +32,38 @@
 
   <!-- Главный экран -->
   <div id="screen-main" class="screen">
-    <h1 id="player-name">Герой</h1>
-    <p>Уровень: <span id="level">1</span> | Опыт: <span id="exp">0</span>/<span id="exp-next">20</span></p>
-    <p>Золото: <span id="gold">0</span></p>
-    <div class="hp-bar"><div id="player-hp-bar" class="hp-fill" style="width:100%"></div></div>
-    <p>HP: <span id="player-hp">120</span>/<span id="player-maxhp">120</span></p>
-    <button onclick="startBattle()">⚔️ В бой со слизью</button>
+    <div class="card">
+      <h1 id="player-name">Герой</h1>
+      <p>Уровень: <span id="level">1</span> | Опыт: <span id="exp">0</span>/<span id="exp-next">20</span></p>
+      <p>Золото: <span id="gold">0</span></p>
+      <div class="hp-bar"><div id="player-hp-bar" class="hp-fill" style="width:100%"></div></div>
+      <p>HP: <span id="player-hp">120</span>/<span id="player-maxhp">120</span></p>
+    </div>
+
+    <div class="card">
+      <h3>Выбери локацию</h3>
+      <div id="locations-list"></div>
+    </div>
+
+    <div class="card">
+      <h3>Монстры в локации: <span id="current-location-name">—</span></h3>
+      <div id="monsters-list"></div>
+    </div>
   </div>
 
   <!-- Экран боя -->
   <div id="screen-battle" class="screen">
     <h1>Бой!</h1>
-    <p>Монстр: Слизь</p>
+    <p>Монстр: <span id="monster-name">—</span></p>
     <div class="hp-bar"><div id="monster-hp-bar" class="hp-fill" style="width:100%"></div></div>
-    <p>HP монстра: <span id="monster-hp">30</span>/30</p>
+    <p>HP монстра: <span id="monster-hp">30</span>/<span id="monster-maxhp">30</span></p>
+
     <div class="hp-bar"><div id="battle-player-hp-bar" class="hp-fill" style="width:100%"></div></div>
     <p>Твоё HP: <span id="battle-player-hp">120</span>/<span id="battle-player-maxhp">120</span></p>
+
     <button onclick="attack()">🗡️ Атаковать</button>
-    <p id="battle-log"></p>
+    <button onclick="flee()" style="background:#555;">🏃 Бежать</button>
+    <p id="battle-log" class="log"></p>
   </div>
 
   <script src="game.js"></script>
