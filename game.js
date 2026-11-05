@@ -1,8 +1,8 @@
-// Инициализация Telegram
+// ====== ИНИЦИАЛИЗАЦИЯ TELEGRAM ======
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// ====== ДАННЫЕ ЛОКАЦИЙ И МОНСТРОВ ======
+// ====== ДАННЫЕ ЛОКАЦИЙ ======
 const locations = [
   {
     id: 'forest',
@@ -10,7 +10,8 @@ const locations = [
     monsters: [
       { id: 'slime', name: 'Слизь', hp: 30, attack: 5, exp: 10, gold: 5 },
       { id: 'goblin', name: 'Гоблин', hp: 50, attack: 10, exp: 25, gold: 15 }
-    ]
+    ],
+    boss: { id: 'forest_boss', name: '🌳 Древний энт', hp: 200, attack: 20, exp: 150, gold: 100 }
   },
   {
     id: 'cave',
@@ -18,7 +19,8 @@ const locations = [
     monsters: [
       { id: 'bat', name: 'Летучая мышь', hp: 40, attack: 12, exp: 20, gold: 10 },
       { id: 'skeleton', name: 'Скелет', hp: 80, attack: 18, exp: 50, gold: 30 }
-    ]
+    ],
+    boss: { id: 'cave_boss', name: '🦇 Король летучих мышей', hp: 350, attack: 30, exp: 300, gold: 200 }
   },
   {
     id: 'ruins',
@@ -26,7 +28,8 @@ const locations = [
     monsters: [
       { id: 'ghost', name: 'Призрак', hp: 60, attack: 22, exp: 60, gold: 40 },
       { id: 'golem', name: 'Каменный голем', hp: 150, attack: 30, exp: 120, gold: 80 }
-    ]
+    ],
+    boss: { id: 'ruins_boss', name: '💀 Лич-повелитель', hp: 500, attack: 45, exp: 600, gold: 400 }
   }
 ];
 
@@ -40,14 +43,15 @@ let player = {
   gold: 0,
   hp: 120,
   maxHp: 120,
-  attack: 15
+  attack: 15,
+  defeatedMonsters: []
 };
 
-// Текущая локация и монстр
+// ====== ТЕКУЩЕЕ СОСТОЯНИЕ ======
 let currentLocationId = 'forest';
-let currentMonster = null; // копия монстра для боя
+let currentMonster = null;
 
-// ====== НАВИГАЦИЯ ЭКРАНОВ ======
+// ====== НАВИГАЦИЯ ======
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -70,7 +74,7 @@ function chooseClass(cls) {
   saveProgress();
 }
 
-// ====== ОТРИСОВКА ЛОКАЦИЙ ======
+// ====== ЛОКАЦИИ ======
 function renderLocations() {
   const container = document.getElementById('locations-list');
   container.innerHTML = '';
@@ -83,14 +87,14 @@ function renderLocations() {
   });
 }
 
-// ====== ВЫБОР ЛОКАЦИИ ======
 function selectLocation(id) {
   currentLocationId = id;
   renderLocations();
   renderMonsters();
+  renderBoss();
 }
 
-// ====== ОТРИСОВКА МОНСТРОВ В ЛОКАЦИИ ======
+// ====== МОНСТРЫ ======
 function renderMonsters() {
   const loc = locations.find(l => l.id === currentLocationId);
   document.getElementById('current-location-name').textContent = loc.name;
@@ -105,7 +109,28 @@ function renderMonsters() {
   });
 }
 
-// ====== ОБНОВЛЕНИЕ ГЛАВНОГО ЭКРАНА ======
+// ====== БОСС ======
+function renderBoss() {
+  const loc = locations.find(l => l.id === currentLocationId);
+  const boss = loc.boss;
+  const container = document.getElementById('boss-list');
+  container.innerHTML = '';
+
+  const allDefeated = loc.monsters.every(m => player.defeatedMonsters.includes(m.id));
+
+  const btn = document.createElement('button');
+  btn.className = 'boss-btn';
+  if (allDefeated) {
+    btn.textContent = `${boss.name} (HP ${boss.hp}, Атака ${boss.attack}) 👑`;
+    btn.onclick = () => startBattle(boss);
+  } else {
+    btn.textContent = `🔒 Победи всех монстров локации`;
+    btn.disabled = true;
+  }
+  container.appendChild(btn);
+}
+
+// ====== ГЛАВНЫЙ ЭКРАН ======
 function updateMainScreen() {
   document.getElementById('player-name').textContent = player.name;
   document.getElementById('level').textContent = player.level;
@@ -117,9 +142,8 @@ function updateMainScreen() {
   document.getElementById('player-hp-bar').style.width = (player.hp / player.maxHp * 100) + '%';
 }
 
-// ====== НАЧАЛО БОЯ ======
+// ====== БОЙ ======
 function startBattle(monsterTemplate) {
-  // Создаём копию монстра, чтобы не портить шаблон
   currentMonster = { ...monsterTemplate, maxHp: monsterTemplate.hp };
 
   document.getElementById('monster-name').textContent = currentMonster.name;
@@ -135,11 +159,9 @@ function startBattle(monsterTemplate) {
   showScreen('screen-battle');
 }
 
-// ====== АТАКА ======
 function attack() {
   if (!currentMonster || currentMonster.hp <= 0) return;
 
-  // Игрок бьёт
   const playerDmg = Math.max(1, player.attack - 2);
   currentMonster.hp -= playerDmg;
   let log = `Ты нанёс ${playerDmg} урона. `;
@@ -149,34 +171,42 @@ function attack() {
     log += `${currentMonster.name} побеждён! +${currentMonster.exp} опыта, +${currentMonster.gold} золота.`;
     player.exp += currentMonster.exp;
     player.gold += currentMonster.gold;
+
+    if (!player.defeatedMonsters.includes(currentMonster.id)) {
+      player.defeatedMonsters.push(currentMonster.id);
+    }
+
     checkLevelUp();
     updateMainScreen();
     saveProgress();
+
     document.getElementById('monster-hp').textContent = 0;
     document.getElementById('monster-hp-bar').style.width = '0%';
     document.getElementById('battle-log').textContent = log;
-    setTimeout(() => showScreen('screen-main'), 1800);
+
+    setTimeout(() => {
+      showScreen('screen-main');
+      renderBoss();
+    }, 1800);
     return;
   }
 
-  // Монстр отвечает
   const monsterDmg = Math.max(1, currentMonster.attack - 2);
   player.hp -= monsterDmg;
   log += `${currentMonster.name} нанёс ${monsterDmg} урона.`;
 
   if (player.hp <= 0) {
     player.hp = 0;
-    log += ' Ты проиграл! Возвращайся в город.';
+    log += ' Ты проиграл!';
     document.getElementById('battle-log').textContent = log;
     setTimeout(() => {
-      player.hp = player.maxHp; // восстановление после поражения
+      player.hp = player.maxHp;
       updateMainScreen();
       showScreen('screen-main');
     }, 2000);
     return;
   }
 
-  // Обновить полоски и лог
   document.getElementById('monster-hp').textContent = currentMonster.hp;
   document.getElementById('monster-hp-bar').style.width = (currentMonster.hp / currentMonster.maxHp * 100) + '%';
   document.getElementById('battle-player-hp').textContent = player.hp;
@@ -184,12 +214,11 @@ function attack() {
   document.getElementById('battle-log').textContent = log;
 }
 
-// ====== БЕГСТВО ======
 function flee() {
   showScreen('screen-main');
 }
 
-// ====== ПРОВЕРКА УРОВНЯ ======
+// ====== УРОВЕНЬ ======
 function checkLevelUp() {
   while (player.exp >= player.expNext) {
     player.exp -= player.expNext;
@@ -209,12 +238,12 @@ async function saveProgress() {
   }
 }
 
-// ====== ЗАГРУЗКА ======
 async function loadProgress() {
   if (tg.CloudStorage) {
     const data = await tg.CloudStorage.getItem('player');
     if (data) {
       player = JSON.parse(data);
+      if (!player.defeatedMonsters) player.defeatedMonsters = [];
       updateMainScreen();
       renderLocations();
       selectLocation(currentLocationId);
