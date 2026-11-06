@@ -1,81 +1,1173 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Моя RPG</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body { font-family: sans-serif; background: #1a1a2e; color: #eee; padding: 15px; margin: 0; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-    button { padding: 12px; margin: 5px 0; border: none; border-radius: 8px; background: #4a4a8a; color: white; font-size: 15px; width: 100%; cursor: pointer; }
-    button:active { background: #6a6aaa; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    button.location-btn { background: #2e5a3e; }
-    button.location-btn.active-loc { background: #4e9a6e; }
-    button.monster-btn { background: #6a3e2e; }
-    button.boss-btn { background: #8a2e2e; }
-    button.boss-btn:disabled { background: #444; }
-    .hp-bar { background: #333; height: 18px; border-radius: 9px; overflow: hidden; margin: 5px 0; }
-    .hp-fill { background: #e74c3c; height: 100%; transition: width 0.3s; }
-    .card { background: #2a2a4e; padding: 12px; border-radius: 10px; margin-bottom: 12px; }
-    h1 { font-size: 20px; margin: 8px 0; }
-    h2 { font-size: 18px; margin: 8px 0; }
-    h3 { font-size: 15px; margin: 6px 0; color: #aaa; }
-    p { margin: 6px 0; font-size: 14px; }
-    .log { font-size: 13px; color: #ccc; min-height: 40px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Моя RPG</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(180deg,#0f0f1e 0%,#1a1a2e 100%);color:#eee;padding:12px;margin:0;min-height:100vh}
+.screen{display:none}
+.screen.active{display:block}
+h1{font-size:22px;margin:8px 0;text-align:center}
+h3{font-size:14px;margin:0 0 12px;color:#8a8ab0;text-transform:uppercase;letter-spacing:1px;text-align:center}
+p{margin:6px 0;font-size:14px}
+.card{background:linear-gradient(145deg,#252547,#1e1e3a);padding:14px;border-radius:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.05)}
+button{padding:14px;margin:6px 0;border:none;border-radius:12px;background:linear-gradient(145deg,#4a4a8a,#3a3a6a);color:#fff;font-size:15px;font-weight:600;width:100%;cursor:pointer;transition:all .15s;box-shadow:0 3px 8px rgba(0,0,0,.3)}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.small{padding:8px 12px;font-size:12px;width:auto;margin:0}
+button.location-btn{background:linear-gradient(145deg,#2e5a3e,#1e4a2e);font-size:13px;padding:10px 6px;text-align:left;line-height:1.2}
+button.location-btn.active-loc{background:linear-gradient(145deg,#4e9a6e,#2e7a4e);box-shadow:0 0 0 2px #8af0b0 inset}
+button.monster-btn{background:linear-gradient(145deg,#6a3e2e,#4a2e1e)}
+button.boss-btn{background:linear-gradient(145deg,#a02e2e,#7a1e1e)}
+button.boss-btn:disabled{background:#333}
+button.use-btn{background:linear-gradient(145deg,#2e6a3e,#1e4a2e)}
+button.equip-btn{background:linear-gradient(145deg,#6a5a2e,#4a3a1e)}
+button.buy-btn{background:linear-gradient(145deg,#2e5a6a,#1e3a4a)}
+button.sell-btn{background:linear-gradient(145deg,#6a5a2e,#4a3a1e)}
+button.auto-btn{background:linear-gradient(145deg,#6a2e6a,#4a1e4a)}
+button.stop-btn{background:linear-gradient(145deg,#a04020,#7a2a10)}
+button.skill-btn{background:linear-gradient(145deg,#2e5a8a,#1e3a6a);font-size:13px;padding:10px 6px}
+button.skill-btn:disabled{background:#333}
+button.tab-cat{background:#1e1e3a;border:1px solid rgba(255,255,255,.1);padding:10px 4px;font-size:12px;margin-bottom:8px}
+button.tab-cat.active-cat{background:linear-gradient(145deg,#6a6aaa,#4a4a8a);border-color:#6a6aaa}
+.hp-bar{background:#111;height:22px;border-radius:11px;overflow:hidden;margin:8px 0;position:relative}
+.hp-fill{background:linear-gradient(90deg,#e74c3c,#ff6b5b);height:100%;transition:width .3s}
+.hp-bar.player .hp-fill{background:linear-gradient(90deg,#2ecc71,#58e88a)}
+.hp-text{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;text-shadow:0 1px 2px #000}
+.exp-bar{background:#111;height:14px;border-radius:7px;overflow:hidden;margin:6px 0;position:relative}
+.exp-fill{background:linear-gradient(90deg,#f1c40f,#f39c12);height:100%;transition:width .3s}
+.exp-text{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;text-shadow:0 1px 2px #000;color:#fff}
+.nav-bar{display:flex;gap:8px;margin-bottom:14px}
+.nav-bar button{flex:1;margin:0;padding:12px 4px;font-size:13px;background:#2a2a4e;box-shadow:none;border-radius:10px}
+.nav-bar button.active-nav{background:linear-gradient(145deg,#6a6aaa,#4a4a8a);box-shadow:0 3px 8px rgba(106,106,170,.4)}
+.item-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;margin-bottom:8px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.03)}
+.item-icon{font-size:26px;flex-shrink:0;width:34px;text-align:center}
+.item-info{flex:1;font-size:13px;line-height:1.4}
+.item-info b{font-size:14px}
+.item-desc{color:#8a8ab0;font-size:11px}
+.item-actions{display:flex;flex-direction:column;gap:4px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:10px;margin-bottom:8px;border-radius:10px;background:rgba(255,255,255,.04);gap:8px}
+.stat-row .stat-label{font-size:14px;flex:1}
+.stat-row .stat-value{font-size:15px;font-weight:bold;color:#f1c40f}
+.points-left{color:#f1c40f;font-weight:bold;text-align:center;font-size:16px;margin:10px 0}
+.log{font-size:13px;color:#ccc;min-height:50px;padding:10px;background:rgba(0,0,0,.3);border-radius:10px;margin-top:10px;line-height:1.5;word-break:break-word}
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold;margin-left:6px}
+.badge-str{background:#e74c3c}
+.badge-agi{background:#2ecc71}
+.badge-vit{background:#3498db}
+#screen-class{padding-top:40px}
+#screen-class h1{margin-bottom:24px;font-size:26px}
+.class-btn{display:flex;align-items:center;gap:14px;padding:18px;text-align:left;background:linear-gradient(145deg,#3a3a6a,#2a2a4e);border-radius:16px}
+.class-icon{font-size:36px}
+.class-info{flex:1}
+.class-info b{font-size:17px;display:block;margin-bottom:4px}
+.class-info span{font-size:12px;color:#aaa}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.hero-stat{background:rgba(255,255,255,.05);padding:8px;border-radius:10px;text-align:center;font-size:12px}
+.hero-stat b{display:block;font-size:16px;color:#f1c40f;margin-bottom:2px}
+.skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.char-stat{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px}
+.char-stat:last-child{border-bottom:none}
+.char-stat b{color:#f1c40f}
+.equip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.equip-slot{background:rgba(255,255,255,.05);padding:10px;border-radius:10px;text-align:center;font-size:12px;min-height:70px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.equip-slot.empty{opacity:.6;border:1px dashed rgba(255,255,255,.15)}
+.equip-slot .slot-icon{font-size:24px;margin-bottom:4px}
+.equip-slot .slot-name{font-weight:bold;color:#f1c40f;font-size:12px}
+.equip-slot .slot-desc{color:#aaa;font-size:11px;margin-top:2px}
+.equip-slot button{margin-top:6px;padding:4px 10px;font-size:11px;width:auto}
+.loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.cat-bar{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.cat-bar button{flex:1;min-width:70px;font-size:11px;padding:8px 2px;margin:0}
+</style>
 </head>
 <body>
-  <!-- Экран выбора класса -->
-  <div id="screen-class" class="screen active">
-    <h1>Выбери класс</h1>
-    <button onclick="chooseClass('warrior')">⚔️ Воин (HP 120, Атака 15)</button>
-    <button onclick="chooseClass('mage')">🔮 Маг (HP 80, Атака 25)</button>
+
+<div id="screen-class" class="screen active">
+  <h1>⚔️ Выбери класс</h1>
+  <button class="class-btn" onclick="chooseClass('warrior')">
+    <span class="class-icon">🛡️</span>
+    <span class="class-info"><b>Воин</b><span>HP 150 · Атака 15 · Танк</span></span>
+  </button>
+  <button class="class-btn" onclick="chooseClass('mage')">
+    <span class="class-icon">🔮</span>
+    <span class="class-info"><b>Маг</b><span>HP 80 · Атака 30 · Урон</span></span>
+  </button>
+  <button class="class-btn" onclick="chooseClass('archer')">
+    <span class="class-icon">🏹</span>
+    <span class="class-info"><b>Лучник</b><span>HP 110 · Атака 22 · Крит</span></span>
+  </button>
+  <button class="class-btn" onclick="chooseClass('assassin')">
+    <span class="class-icon">🗡️</span>
+    <span class="class-info"><b>Ассасин</b><span>HP 90 · Атака 28 · Скорость</span></span>
+  </button>
+</div>
+
+<div id="screen-main" class="screen">
+  <div class="nav-bar">
+    <button id="nav-hero" class="active-nav" onclick="switchTab('hero')">👤 Герой</button>
+    <button id="nav-inventory" onclick="switchTab('inventory')">🎒 Вещи</button>
+    <button id="nav-shop" onclick="switchTab('shop')">🏪 Лавка</button>
   </div>
 
-  <!-- Главный экран -->
-  <div id="screen-main" class="screen">
+  <div id="tab-hero">
     <div class="card">
       <h1 id="player-name">Герой</h1>
-      <p>Уровень: <span id="level">1</span> | Опыт: <span id="exp">0</span>/<span id="exp-next">20</span></p>
-      <p>Золото: <span id="gold">0</span></p>
-      <div class="hp-bar"><div id="player-hp-bar" class="hp-fill" style="width:100%"></div></div>
-      <p>HP: <span id="player-hp">120</span>/<span id="player-maxhp">120</span></p>
+      <p style="text-align:center;color:#8a8ab0"><span id="player-class">—</span> · Уровень <span id="level">1</span></p>
+      <div class="hp-bar player"><div id="player-hp-bar" class="hp-fill" style="width:100%"></div><div class="hp-text"><span id="player-hp">120</span>/<span id="player-maxhp">120</span> HP</div></div>
+      <div class="exp-bar"><div id="player-exp-bar" class="exp-fill" style="width:0%"></div><div class="exp-text"><span id="exp-main-text">0 / 20 (0%)</span></div></div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b id="player-attack">15</b>Атака</div>
+        <div class="hero-stat"><b id="player-defense">0</b>Защита</div>
+        <div class="hero-stat"><b id="gold">0</b>Золото 🪙</div>
+        <div class="hero-stat"><b id="exp">0</b>Опыт / <span id="exp-next">20</span></div>
+      </div>
+      <p class="points-left">🎯 Очков: <span id="stat-points">0</span></p>
+      <button class="small" style="width:100%;margin-top:8px" onclick="openStats()">📊 Распределить очки</button>
+      <button class="small" style="width:100%;margin-top:8px;background:linear-gradient(145deg,#2e6a3e,#1e4a2e)" onclick="restAtCamp()">🏕️ Отдохнуть</button>
     </div>
+    <div class="card"><h3>🗺️ Локации</h3><div id="locations-list" class="loc-grid"></div></div>
+    <div class="card"><h3>👹 Монстры: <span id="current-location-name">—</span></h3><div id="monsters-list"></div></div>
+    <div class="card"><h3>👑 Босс локации</h3><div id="boss-list"></div></div>
+  </div>
 
+  <div id="tab-inventory" style="display:none">
     <div class="card">
-      <h3>Выбери локацию</h3>
-      <div id="locations-list"></div>
+      <h3>📊 Характеристики</h3>
+      <div id="char-stats"></div>
     </div>
-
     <div class="card">
-      <h3>Монстры в локации: <span id="current-location-name">—</span></h3>
-      <div id="monsters-list"></div>
+      <h3>🎽 Надето</h3>
+      <div id="equipped-list" class="equip-grid"></div>
     </div>
-
     <div class="card">
-      <h3>👑 Босс локации</h3>
-      <div id="boss-list"></div>
+      <h3>🎒 Инвентарь</h3>
+      <div class="cat-bar" id="inv-cat-bar">
+        <button class="tab-cat active-cat" onclick="switchInvCat('all', this)">Все</button>
+        <button class="tab-cat" onclick="switchInvCat('weapon', this)">🗡️ Оружие</button>
+        <button class="tab-cat" onclick="switchInvCat('armor', this)">🛡️ Броня</button>
+        <button class="tab-cat" onclick="switchInvCat('potion', this)">🧪 Зелья</button>
+        <button class="tab-cat" onclick="switchInvCat('scroll', this)">📜 Свитки</button>
+      </div>
+      <div id="inventory-list"></div>
     </div>
   </div>
 
-  <!-- Экран боя -->
-  <div id="screen-battle" class="screen">
-    <h1>Бой!</h1>
-    <p>Монстр: <span id="monster-name">—</span></p>
-    <div class="hp-bar"><div id="monster-hp-bar" class="hp-fill" style="width:100%"></div></div>
-    <p>HP монстра: <span id="monster-hp">30</span>/<span id="monster-maxhp">30</span></p>
+  <div id="tab-shop" style="display:none">
+    <div class="card">
+      <h3>🏪 Купить</h3>
+      <div class="cat-bar" id="shop-cat-bar">
+        <button class="tab-cat active-cat" onclick="switchShopCat('all', this)">Все</button>
+        <button class="tab-cat" onclick="switchShopCat('weapon', this)">🗡️ Оружие</button>
+        <button class="tab-cat" onclick="switchShopCat('armor', this)">🛡️ Броня</button>
+        <button class="tab-cat" onclick="switchShopCat('potion', this)">🧪 Зелья</button>
+        <button class="tab-cat" onclick="switchShopCat('scroll', this)">📜 Свитки</button>
+      </div>
+      <div id="shop-list"></div>
+    </div>
+    <div class="card">
+      <h3>💰 Продать (50%)</h3>
+      <div id="sell-list"></div>
+    </div>
+  </div>
+</div>
 
-    <div class="hp-bar"><div id="battle-player-hp-bar" class="hp-fill" style="width:100%"></div></div>
-    <p>Твоё HP: <span id="battle-player-hp">120</span>/<span id="battle-player-maxhp">120</span></p>
+<div id="screen-stats" class="screen">
+  <h1>📊 Распределение очков</h1>
+  <p class="points-left">Осталось: <span id="stats-points-left">0</span></p>
+  <div class="card">
+    <div class="stat-row"><span class="stat-label">💪 Сила <span class="badge badge-str">+2 атаки</span></span><span class="stat-value" id="stat-str">0</span><button class="small" onclick="addStat('str')">+</button></div>
+    <div class="stat-row"><span class="stat-label">🏃 Ловкость <span class="badge badge-agi">+2% крит</span></span><span class="stat-value" id="stat-agi">0</span><button class="small" onclick="addStat('agi')">+</button></div>
+    <div class="stat-row"><span class="stat-label">❤️ Выносливость <span class="badge badge-vit">+15 HP</span></span><span class="stat-value" id="stat-vit">0</span><button class="small" onclick="addStat('vit')">+</button></div>
+  </div>
+  <button onclick="closeStats()">✅ Готово</button>
+</div>
 
+<div id="screen-battle" class="screen">
+  <h1>⚔️ Бой!</h1>
+  <div class="card">
+    <p style="text-align:center;font-size:18px;font-weight:bold" id="monster-name">—</p>
+    <div class="hp-bar"><div id="monster-hp-bar" class="hp-fill" style="width:100%"></div><div class="hp-text"><span id="monster-hp">30</span>/<span id="monster-maxhp">30</span> HP</div></div>
+    <div class="hp-bar player"><div id="battle-player-hp-bar" class="hp-fill" style="width:100%"></div><div class="hp-text"><span id="battle-player-hp">120</span>/<span id="battle-player-maxhp">120</span> HP</div></div>
+    <div class="exp-bar"><div id="battle-exp-bar" class="exp-fill" style="width:0%"></div><div class="exp-text"><span id="exp-battle-text">0 / 20 (0%)</span></div></div>
+    <div class="skills-grid" id="skills-grid"></div>
     <button onclick="attack()">🗡️ Атаковать</button>
-    <button onclick="flee()" style="background:#555;">🏃 Бежать</button>
+    <button onclick="toggleAutoAttack()" id="auto-btn" class="auto-btn">▶️ Автоатака</button>
+    <button onclick="usePotionInBattle()" class="use-btn">🧪 Выпить зелье</button>
+    <button onclick="flee()" style="background:#444">🏃 Бежать</button>
     <p id="battle-log" class="log"></p>
   </div>
+</div>
 
-  <script src="game.js"></script>
+<div id="upgrade-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;padding:20px;overflow-y:auto">
+  <div class="card" style="max-width:400px;margin:40px auto">
+    <h1 style="font-size:20px" id="upgrade-title">✨ Усиление</h1>
+    <p id="upgrade-weapon-name" style="text-align:center;font-size:16px;font-weight:bold">—</p>
+    <p id="upgrade-current" style="text-align:center;color:#f1c40f">Текущий уровень: +0</p>
+    <p id="upgrade-stats" style="text-align:center;color:#8a8ab0;font-size:13px"></p>
+    <div id="upgrade-chance" style="text-align:center;font-size:14px;margin:10px 0"></div>
+    <button id="upgrade-btn-normal" class="buy-btn" onclick="doUpgrade('normal')">📜 Усилить обычным свитком</button>
+    <button id="upgrade-btn-divine" class="use-btn" onclick="doUpgrade('divine')">🌟 Усилить божественным свитком</button>
+    <button style="background:#444" onclick="closeUpgradeModal()">Отмена</button>
+    <p id="upgrade-log" class="log"></p>
+  </div>
+</div>
+
+<script>
+/* ===== TELEGRAM ===== */
+var tg = null;
+try {
+  if (window.Telegram && window.Telegram.WebApp) {
+    tg = window.Telegram.WebApp;
+    if (tg.expand) tg.expand();
+  }
+} catch (e) { console.warn('Telegram init:', e); }
+
+/* ===== ITEMS ===== */
+var ITEMS = {
+  /* --- ОРУЖИЕ --- */
+  w_sword:{id:'w_sword',name:'Ржавый меч',icon:'🗡️',type:'weapon',slot:'weapon',class:'warrior',attack:5,price:30,tier:1,desc:'+5 атаки'},
+  w_axe:{id:'w_axe',name:'Боевой топор',icon:'🪓',type:'weapon',slot:'weapon',class:'warrior',attack:12,price:120,tier:2,desc:'+12 атаки'},
+  w_great:{id:'w_great',name:'Двуручный меч',icon:'⚔️',type:'weapon',slot:'weapon',class:'warrior',attack:25,price:400,tier:3,desc:'+25 атаки'},
+  w_legend:{id:'w_legend',name:'Клинок героя',icon:'🌟',type:'weapon',slot:'weapon',class:'warrior',attack:50,price:1500,tier:4,desc:'+50 атаки'},
+  w_staff:{id:'w_staff',name:'Ученический посох',icon:'🪄',type:'weapon',slot:'weapon',class:'mage',attack:8,price:35,tier:1,desc:'+8 атаки'},
+  w_orb:{id:'w_orb',name:'Сфера огня',icon:'🔮',type:'weapon',slot:'weapon',class:'mage',attack:18,price:160,tier:2,desc:'+18 атаки'},
+  w_crystal:{id:'w_crystal',name:'Кристалл маны',icon:'💠',type:'weapon',slot:'weapon',class:'mage',attack:35,price:600,tier:3,desc:'+35 атаки'},
+  w_legendm:{id:'w_legendm',name:'Посох архимага',icon:'🌟',type:'weapon',slot:'weapon',class:'mage',attack:65,price:2000,tier:4,desc:'+65 атаки'},
+  w_bow:{id:'w_bow',name:'Короткий лук',icon:'🏹',type:'weapon',slot:'weapon',class:'archer',attack:7,price:40,tier:1,desc:'+7 атаки'},
+  w_longbow:{id:'w_longbow',name:'Длинный лук',icon:'🏹',type:'weapon',slot:'weapon',class:'archer',attack:16,price:180,tier:2,desc:'+16 атаки'},
+  w_elven:{id:'w_elven',name:'Эльфийский лук',icon:'🏹',type:'weapon',slot:'weapon',class:'archer',attack:32,price:650,tier:3,desc:'+32 атаки'},
+  w_legendb:{id:'w_legendb',name:'Лук ветра',icon:'🌟',type:'weapon',slot:'weapon',class:'archer',attack:60,price:2100,tier:4,desc:'+60 атаки'},
+  w_dagger:{id:'w_dagger',name:'Кинжал',icon:'🔪',type:'weapon',slot:'weapon',class:'assassin',attack:9,price:45,tier:1,desc:'+9 атаки'},
+  w_poison:{id:'w_poison',name:'Отравленный клинок',icon:'🗡️',type:'weapon',slot:'weapon',class:'assassin',attack:20,price:200,tier:2,desc:'+20 атаки'},
+  w_shadow:{id:'w_shadow',name:'Теневой клинок',icon:'🗡️',type:'weapon',slot:'weapon',class:'assassin',attack:40,price:700,tier:3,desc:'+40 атаки'},
+  w_legendass:{id:'w_legendass',name:'Клинок тьмы',icon:'🌟',type:'weapon',slot:'weapon',class:'assassin',attack:75,price:2300,tier:4,desc:'+75 атаки'},
+
+  /* --- БРОНЯ ВОИН --- */
+  a_leather:{id:'a_leather',name:'Кожаный доспех',icon:'🥋',type:'armor',slot:'armor',class:'warrior',defense:5,price:40,tier:1,desc:'+5 защиты'},
+  a_chain:{id:'a_chain',name:'Кольчуга',icon:'🛡️',type:'armor',slot:'armor',class:'warrior',defense:12,price:150,tier:2,desc:'+12 защиты'},
+  a_plate:{id:'a_plate',name:'Латный доспех',icon:'🦾',type:'armor',slot:'armor',class:'warrior',defense:25,price:500,tier:3,desc:'+25 защиты'},
+  a_legend:{id:'a_legend',name:'Броня титана',icon:'💎',type:'armor',slot:'armor',class:'warrior',defense:50,price:1800,tier:4,desc:'+50 защиты'},
+  h_helm1:{id:'h_helm1',name:'Шлем воина',icon:'🪖',type:'armor',slot:'helm',class:'warrior',defense:3,price:30,tier:1,desc:'+3 защиты'},
+  h_helm2:{id:'h_helm2',name:'Стальной шлем',icon:'🪖',type:'armor',slot:'helm',class:'warrior',defense:8,price:120,tier:2,desc:'+8 защиты'},
+  h_helm3:{id:'h_helm3',name:'Рогатый шлем',icon:'🪖',type:'armor',slot:'helm',class:'warrior',defense:18,price:400,tier:3,desc:'+18 защиты'},
+  g_gloves1:{id:'g_gloves1',name:'Кожаные перчатки',icon:'🧤',type:'armor',slot:'gloves',class:'warrior',defense:2,price:25,tier:1,desc:'+2 защиты'},
+  g_gloves2:{id:'g_gloves2',name:'Стальные рукавицы',icon:'🧤',type:'armor',slot:'gloves',class:'warrior',defense:7,price:100,tier:2,desc:'+7 защиты'},
+  g_gloves3:{id:'g_gloves3',name:'Латные перчатки',icon:'🧤',type:'armor',slot:'gloves',class:'warrior',defense:15,price:350,tier:3,desc:'+15 защиты'},
+  b_boots1:{id:'b_boots1',name:'Кожаные сапоги',icon:'👢',type:'armor',slot:'boots',class:'warrior',defense:2,price:25,tier:1,desc:'+2 защиты'},
+  b_boots2:{id:'b_boots2',name:'Стальные сапоги',icon:'👢',type:'armor',slot:'boots',class:'warrior',defense:7,price:100,tier:2,desc:'+7 защиты'},
+  b_boots3:{id:'b_boots3',name:'Латные сапоги',icon:'👢',type:'armor',slot:'boots',class:'warrior',defense:15,price:350,tier:3,desc:'+15 защиты'},
+
+  /* --- БРОНЯ МАГ --- */
+  a_robe:{id:'a_robe',name:'Мантия ученика',icon:'👘',type:'armor',slot:'armor',class:'mage',defense:3,price:35,tier:1,desc:'+3 защиты'},
+  a_arch:{id:'a_arch',name:'Архимагская роба',icon:'🧥',type:'armor',slot:'armor',class:'mage',defense:10,price:170,tier:2,desc:'+10 защиты'},
+  a_mystic:{id:'a_mystic',name:'Мистическая мантия',icon:'🌀',type:'armor',slot:'armor',class:'mage',defense:22,price:550,tier:3,desc:'+22 защиты'},
+  a_legendm:{id:'a_legendm',name:'Одеяние богов',icon:'💎',type:'armor',slot:'armor',class:'mage',defense:45,price:1900,tier:4,desc:'+45 защиты'},
+  h_hood1:{id:'h_hood1',name:'Капюшон',icon:'🧢',type:'armor',slot:'helm',class:'mage',defense:2,price:30,tier:1,desc:'+2 защиты'},
+  h_hood2:{id:'h_hood2',name:'Шляпа мага',icon:'🎩',type:'armor',slot:'helm',class:'mage',defense:6,price:120,tier:2,desc:'+6 защиты'},
+  h_hood3:{id:'h_hood3',name:'Корона магии',icon:'👑',type:'armor',slot:'helm',class:'mage',defense:15,price:400,tier:3,desc:'+15 защиты'},
+  g_gloves_m1:{id:'g_gloves_m1',name:'Тканевые перчатки',icon:'🧤',type:'armor',slot:'gloves',class:'mage',defense:1,price:20,tier:1,desc:'+1 защиты'},
+  g_gloves_m2:{id:'g_gloves_m2',name:'Магические перчатки',icon:'🧤',type:'armor',slot:'gloves',class:'mage',defense:5,price:90,tier:2,desc:'+5 защиты'},
+  g_gloves_m3:{id:'g_gloves_m3',name:'Перчатки чародея',icon:'🧤',type:'armor',slot:'gloves',class:'mage',defense:12,price:300,tier:3,desc:'+12 защиты'},
+  b_boots_m1:{id:'b_boots_m1',name:'Туфли',icon:'👞',type:'armor',slot:'boots',class:'mage',defense:1,price:20,tier:1,desc:'+1 защиты'},
+  b_boots_m2:{id:'b_boots_m2',name:'Сапоги мага',icon:'🥾',type:'armor',slot:'boots',class:'mage',defense:5,price:90,tier:2,desc:'+5 защиты'},
+  b_boots_m3:{id:'b_boots_m3',name:'Сапоги скорости',icon:'👢',type:'armor',slot:'boots',class:'mage',defense:12,price:300,tier:3,desc:'+12 защиты'},
+
+  /* --- БРОНЯ ЛУЧНИК --- */
+  a_light:{id:'a_light',name:'Лёгкая туника',icon:'🥋',type:'armor',slot:'armor',class:'archer',defense:4,price:40,tier:1,desc:'+4 защиты'},
+  a_scale:{id:'a_scale',name:'Чешуйчатый доспех',icon:'🛡️',type:'armor',slot:'armor',class:'archer',defense:11,price:180,tier:2,desc:'+11 защиты'},
+  a_ranger:{id:'a_ranger',name:'Доспех рейнджера',icon:'🍃',type:'armor',slot:'armor',class:'archer',defense:24,price:580,tier:3,desc:'+24 защиты'},
+  a_legendarc:{id:'a_legendarc',name:'Броня ветра',icon:'💎',type:'armor',slot:'armor',class:'archer',defense:48,price:2000,tier:4,desc:'+48 защиты'},
+  h_hood_a1:{id:'h_hood_a1',name:'Лёгкий капюшон',icon:'🧢',type:'armor',slot:'helm',class:'archer',defense:2,price:30,tier:1,desc:'+2 защиты'},
+  h_hood_a2:{id:'h_hood_a2',name:'Капюшон следопыта',icon:'🧢',type:'armor',slot:'helm',class:'archer',defense:7,price:130,tier:2,desc:'+7 защиты'},
+  h_hood_a3:{id:'h_hood_a3',name:'Маска снайпера',icon:'🎭',type:'armor',slot:'helm',class:'archer',defense:16,price:420,tier:3,desc:'+16 защиты'},
+  g_gloves_a1:{id:'g_gloves_a1',name:'Кожаные перчатки',icon:'🧤',type:'armor',slot:'gloves',class:'archer',defense:2,price:25,tier:1,desc:'+2 защиты'},
+  g_gloves_a2:{id:'g_gloves_a2',name:'Перчатки стрелка',icon:'🧤',type:'armor',slot:'gloves',class:'archer',defense:6,price:100,tier:2,desc:'+6 защиты'},
+  g_gloves_a3:{id:'g_gloves_a3',name:'Перчатки охотника',icon:'🧤',type:'armor',slot:'gloves',class:'archer',defense:14,price:340,tier:3,desc:'+14 защиты'},
+  b_boots_a1:{id:'b_boots_a1',name:'Лёгкие сапоги',icon:'👢',type:'armor',slot:'boots',class:'archer',defense:2,price:25,tier:1,desc:'+2 защиты'},
+  b_boots_a2:{id:'b_boots_a2',name:'Сапоги следопыта',icon:'👢',type:'armor',slot:'boots',class:'archer',defense:6,price:100,tier:2,desc:'+6 защиты'},
+  b_boots_a3:{id:'b_boots_a3',name:'Сапоги скорости',icon:'👢',type:'armor',slot:'boots',class:'archer',defense:14,price:340,tier:3,desc:'+14 защиты'},
+
+  /* --- БРОНЯ АССАСИН --- */
+  a_cloth:{id:'a_cloth',name:'Тёмная ткань',icon:'🥋',type:'armor',slot:'armor',class:'assassin',defense:3,price:45,tier:1,desc:'+3 защиты'},
+  a_shadow:{id:'a_shadow',name:'Теневой доспех',icon:'🛡️',type:'armor',slot:'armor',class:'assassin',defense:10,price:200,tier:2,desc:'+10 защиты'},
+  a_night:{id:'a_night',name:'Ночной доспех',icon:'🌑',type:'armor',slot:'armor',class:'assassin',defense:22,price:600,tier:3,desc:'+22 защиты'},
+  a_legendass:{id:'a_legendass',name:'Броня тьмы',icon:'💎',type:'armor',slot:'armor',class:'assassin',defense:45,price:2100,tier:4,desc:'+45 защиты'},
+  h_mask1:{id:'h_mask1',name:'Простая маска',icon:'🎭',type:'armor',slot:'helm',class:'assassin',defense:2,price:35,tier:1,desc:'+2 защиты'},
+  h_mask2:{id:'h_mask2',name:'Маска убийцы',icon:'🎭',type:'armor',slot:'helm',class:'assassin',defense:6,price:140,tier:2,desc:'+6 защиты'},
+  h_mask3:{id:'h_mask3',name:'Маска теней',icon:'🎭',type:'armor',slot:'helm',class:'assassin',defense:14,price:450,tier:3,desc:'+14 защиты'},
+  g_gloves_ass1:{id:'g_gloves_ass1',name:'Тонкие перчатки',icon:'🧤',type:'armor',slot:'gloves',class:'assassin',defense:1,price:30,tier:1,desc:'+1 защиты'},
+  g_gloves_ass2:{id:'g_gloves_ass2',name:'Перчатки убийцы',icon:'🧤',type:'armor',slot:'gloves',class:'assassin',defense:5,price:110,tier:2,desc:'+5 защиты'},
+  g_gloves_ass3:{id:'g_gloves_ass3',name:'Когти тьмы',icon:'🧤',type:'armor',slot:'gloves',class:'assassin',defense:12,price:380,tier:3,desc:'+12 защиты'},
+  b_boots_ass1:{id:'b_boots_ass1',name:'Мягкие сапоги',icon:'👢',type:'armor',slot:'boots',class:'assassin',defense:1,price:30,tier:1,desc:'+1 защиты'},
+  b_boots_ass2:{id:'b_boots_ass2',name:'Сапоги убийцы',icon:'👢',type:'armor',slot:'boots',class:'assassin',defense:5,price:110,tier:2,desc:'+5 защиты'},
+  b_boots_ass3:{id:'b_boots_ass3',name:'Сапоги теней',icon:'👢',type:'armor',slot:'boots',class:'assassin',defense:12,price:380,tier:3,desc:'+12 защиты'},
+
+  /* --- ЗЕЛЬЯ (цены увеличены на 100) --- */
+  p_small:{id:'p_small',name:'Малое зелье HP',icon:'🧪',type:'potion',class:null,heal:40,price:115,tier:1,desc:'Восстанавливает 40 HP'},
+  p_big:{id:'p_big',name:'Большое зелье HP',icon:'⚗️',type:'potion',class:null,heal:100,price:140,tier:2,desc:'Восстанавливает 100 HP'},
+
+  /* --- СВИТКИ --- */
+  scroll_weapon:{id:'scroll_weapon',name:'Свиток усиления оружия',icon:'📜',type:'scroll',class:null,price:100,tier:2,desc:'Усиливает оружие'},
+  scroll_divine:{id:'scroll_divine',name:'Божественный свиток усиления оружия',icon:'🌟',type:'scroll',class:null,price:500,tier:3,desc:'Усиливает оружие (+10%)'},
+  scroll_armor:{id:'scroll_armor',name:'Свиток усиления доспеха',icon:'📜',type:'scroll',class:null,price:100,tier:2,desc:'Усиливает броню'},
+  scroll_armor_divine:{id:'scroll_armor_divine',name:'Божественный свиток усиления доспеха',icon:'🌟',type:'scroll',class:null,price:500,tier:3,desc:'Усиливает броню (+10%)'}
+};
+
+/* ===== SKILLS ===== */
+var SKILLS = {
+  warrior:[
+    {id:'w_power',name:'💥 Мощный удар',unlockLevel:10,cooldown:6000,type:'damage',mult:3},
+    {id:'w_shield',name:'🛡️ Боевой клич',unlockLevel:20,cooldown:12000,type:'heal',healPct:0.4},
+    {id:'w_rage',name:'🔥 Ярость',unlockLevel:30,cooldown:15000,type:'damage',mult:5}
+  ],
+  mage:[
+    {id:'m_fire',name:'🔥 Огненный шар',unlockLevel:10,cooldown:6000,type:'damage',mult:3.5},
+    {id:'m_heal',name:'💚 Лечение',unlockLevel:20,cooldown:10000,type:'heal',healPct:0.5},
+    {id:'m_light',name:'⚡ Молния',unlockLevel:30,cooldown:15000,type:'damage',mult:6}
+  ],
+  archer:[
+    {id:'a_shot',name:'🏹 Прицельный выстрел',unlockLevel:10,cooldown:6000,type:'damage',mult:3},
+    {id:'a_trap',name:'🪤 Ловушка',unlockLevel:20,cooldown:12000,type:'heal',healPct:0.4},
+    {id:'a_rain',name:'🌧️ Дождь стрел',unlockLevel:30,cooldown:15000,type:'damage',mult:5}
+  ],
+  assassin:[
+    {id:'s_stab',name:'🔪 Удар в спину',unlockLevel:10,cooldown:6000,type:'damage',mult:3},
+    {id:'s_vanish',name:'💨 Исчезновение',unlockLevel:20,cooldown:12000,type:'heal',healPct:0.4},
+    {id:'s_execute',name:'☠️ Казнь',unlockLevel:30,cooldown:15000,type:'damage',mult:5}
+  ]
+};
+
+/* ===== LOCATIONS (12 шт.) ===== */
+var locations = [
+  {id:'forest',name:'🌲 Тёмный лес',monsters:[
+    {id:'slime',name:'Слизь',icon:'🟢',hp:30,attack:5,defense:0,exp:10,gold:5,dropTier:1,dropChance:0.08},
+    {id:'goblin',name:'Гоблин',icon:'👺',hp:50,attack:10,defense:2,exp:25,gold:15,dropTier:2,dropChance:0.06},
+    {id:'wolf',name:'Волк',icon:'🐺',hp:40,attack:8,defense:1,exp:20,gold:10,dropTier:2,dropChance:0.06}
+  ],boss:{id:'f_boss',name:'Древний энт',icon:'🌳',hp:200,attack:20,defense:5,exp:150,gold:100,dropTier:3,dropChance:0.25,bossRespawnMs:5*60*1000,extraDrops:[{id:'scroll_weapon',chance:0.05}]}},
+  {id:'cave',name:'🕳️ Пещера',monsters:[
+    {id:'bat',name:'Летучая мышь',icon:'🦇',hp:40,attack:12,defense:3,exp:20,gold:10,dropTier:2,dropChance:0.08},
+    {id:'skeleton',name:'Скелет',icon:'💀',hp:80,attack:18,defense:8,exp:50,gold:30,dropTier:2,dropChance:0.06},
+    {id:'spider',name:'Паук',icon:'🕷️',hp:60,attack:15,defense:5,exp:35,gold:20,dropTier:2,dropChance:0.07}
+  ],boss:{id:'c_boss',name:'Король мышей',icon:'🦇',hp:350,attack:30,defense:12,exp:300,gold:200,dropTier:4,dropChance:0.2,bossRespawnMs:6*60*1000,extraDrops:[{id:'scroll_weapon',chance:0.05},{id:'scroll_armor',chance:0.05}]}},
+  {id:'ruins',name:'🏛️ Руины',monsters:[
+    {id:'ghost',name:'Призрак',icon:'👻',hp:60,attack:22,defense:10,exp:60,gold:40,dropTier:3,dropChance:0.07},
+    {id:'golem',name:'Голем',icon:'🗿',hp:150,attack:30,defense:20,exp:120,gold:80,dropTier:3,dropChance:0.05},
+    {id:'zombie',name:'Зомби',icon:'🧟',hp:100,attack:25,defense:12,exp:80,gold:50,dropTier:3,dropChance:0.06}
+  ],boss:{id:'r_boss',name:'Лич-повелитель',icon:'💀',hp:500,attack:45,defense:25,exp:600,gold:400,dropTier:4,dropChance:0.15,bossRespawnMs:7*60*1000,extraDrops:[{id:'scroll_weapon',chance:0.06},{id:'scroll_armor',chance:0.06}]}},
+  {id:'swamp',name:'🐸 Болото',monsters:[
+    {id:'toad',name:'Жаба',icon:'🐸',hp:120,attack:35,defense:15,exp:150,gold:90,dropTier:3,dropChance:0.1},
+    {id:'leech',name:'Пиявка',icon:'🪱',hp:90,attack:40,defense:10,exp:140,gold:80,dropTier:3,dropChance:0.1},
+    {id:'swampy',name:'Болотник',icon:'🧟',hp:180,attack:45,defense:22,exp:200,gold:120,dropTier:4,dropChance:0.08}
+  ],boss:{id:'sw_boss',name:'Королева пиявок',icon:'👑',hp:800,attack:60,defense:35,exp:800,gold:500,dropTier:4,dropChance:0.2,bossRespawnMs:8*60*1000,extraDrops:[{id:'scroll_armor',chance:0.08},{id:'scroll_divine',chance:0.02}]}},
+  {id:'desert',name:'🏜️ Пустыня',monsters:[
+    {id:'scorpion',name:'Скорпион',icon:'🦂',hp:150,attack:50,defense:20,exp:250,gold:150,dropTier:4,dropChance:0.1},
+    {id:'mummy',name:'Мумия',icon:'🧟‍♂️',hp:200,attack:55,defense:25,exp:300,gold:180,dropTier:4,dropChance:0.1},
+    {id:'sandworm',name:'Песчаный червь',icon:'🐛',hp:300,attack:70,defense:30,exp:400,gold:250,dropTier:4,dropChance:0.1}
+  ],boss:{id:'d_boss',name:'Фараон',icon:'🧝',hp:1500,attack:90,defense:50,exp:1500,gold:1000,dropTier:4,dropChance:0.2,bossRespawnMs:9*60*1000,extraDrops:[{id:'scroll_armor',chance:0.1},{id:'scroll_armor_divine',chance:0.03}]}},
+  {id:'ice',name:'❄️ Ледяные пики',monsters:[
+    {id:'yeti',name:'Йети',icon:'🦍',hp:400,attack:100,defense:40,exp:600,gold:350,dropTier:4,dropChance:0.12},
+    {id:'ice_elem',name:'Ледяной элементаль',icon:'🧊',hp:350,attack:120,defense:35,exp:550,gold:320,dropTier:4,dropChance:0.12},
+    {id:'frost_wolf',name:'Морозный волк',icon:'🐺',hp:300,attack:110,defense:30,exp:500,gold:300,dropTier:4,dropChance:0.12}
+  ],boss:{id:'i_boss',name:'Ледяной дракон',icon:'🐉',hp:3000,attack:150,defense:80,exp:3000,gold:2000,dropTier:4,dropChance:0.25,bossRespawnMs:10*60*1000,extraDrops:[{id:'scroll_divine',chance:0.05},{id:'scroll_armor_divine',chance:0.05}]}},
+  {id:'volcano',name:'🌋 Вулкан',monsters:[
+    {id:'imp',name:'Бес',icon:'👿',hp:500,attack:160,defense:50,exp:1000,gold:600,dropTier:4,dropChance:0.15},
+    {id:'magma',name:'Магмовый голем',icon:'🌋',hp:800,attack:180,defense:70,exp:1200,gold:700,dropTier:4,dropChance:0.15},
+    {id:'fire_elem',name:'Элементаль огня',icon:'🔥',hp:600,attack:200,defense:55,exp:1100,gold:650,dropTier:4,dropChance:0.15}
+  ],boss:{id:'v_boss',name:'Повелитель огня',icon:'🔥',hp:5000,attack:250,defense:100,exp:5000,gold:3000,dropTier:4,dropChance:0.3,bossRespawnMs:12*60*1000,extraDrops:[{id:'scroll_divine',chance:0.08},{id:'scroll_armor_divine',chance:0.08}]}},
+  {id:'shadow',name:'🌑 Теневой лес',monsters:[
+    {id:'shade',name:'Тень',icon:'🌑',hp:700,attack:220,defense:60,exp:1500,gold:800,dropTier:4,dropChance:0.15},
+    {id:'nightmare',name:'Кошмар',icon:'👁️',hp:900,attack:250,defense:80,exp:1800,gold:1000,dropTier:4,dropChance:0.15},
+    {id:'dark_elf',name:'Тёмный эльф',icon:'🧝',hp:800,attack:270,defense:70,exp:2000,gold:1100,dropTier:4,dropChance:0.15}
+  ],boss:{id:'sh_boss',name:'Владыка теней',icon:'👤',hp:8000,attack:350,defense:150,exp:8000,gold:5000,dropTier:4,dropChance:0.3,bossRespawnMs:15*60*1000,extraDrops:[{id:'scroll_divine',chance:0.1},{id:'scroll_armor_divine',chance:0.1}]}},
+  {id:'sky',name:'☁️ Небесные острова',monsters:[
+    {id:'harpy',name:'Гарпия',icon:'🦅',hp:1200,attack:400,defense:100,exp:3000,gold:1500,dropTier:4,dropChance:0.2},
+    {id:'griffin',name:'Грифон',icon:'🦁',hp:1500,attack:450,defense:120,exp:3500,gold:1800,dropTier:4,dropChance:0.2},
+    {id:'angel',name:'Падший ангел',icon:'👼',hp:1800,attack:500,defense:140,exp:4000,gold:2000,dropTier:4,dropChance:0.2}
+  ],boss:{id:'sk_boss',name:'Небесный страж',icon:'☁️',hp:12000,attack:600,defense:200,exp:12000,gold:8000,dropTier:4,dropChance:0.35,bossRespawnMs:20*60*1000,extraDrops:[{id:'scroll_divine',chance:0.15},{id:'scroll_armor_divine',chance:0.15}]}},
+  {id:'hell',name:'🔥 Ад',monsters:[
+    {id:'demon',name:'Демон',icon:'😈',hp:2000,attack:700,defense:150,exp:6000,gold:3000,dropTier:4,dropChance:0.25},
+    {id:'hellhound',name:'Адская гончая',icon:'🐕',hp:1800,attack:750,defense:130,exp:5500,gold:2800,dropTier:4,dropChance:0.25},
+    {id:'devil',name:'Дьявол',icon:'👹',hp:2500,attack:800,defense:180,exp:7000,gold:3500,dropTier:4,dropChance:0.25}
+  ],boss:{id:'h_boss',name:'Сатана',icon:'👹',hp:20000,attack:1000,defense:300,exp:20000,gold:15000,dropTier:4,dropChance:0.4,bossRespawnMs:25*60*1000,extraDrops:[{id:'scroll_divine',chance:0.2},{id:'scroll_armor_divine',chance:0.2}]}},
+  {id:'void',name:'🌌 Пустота',monsters:[
+    {id:'void_walker',name:'Странник пустоты',icon:'👾',hp:4000,attack:1500,defense:250,exp:15000,gold:7000,dropTier:4,dropChance:0.3},
+    {id:'void_beast',name:'Зверь пустоты',icon:'👾',hp:5000,attack:1600,defense:280,exp:18000,gold:8000,dropTier:4,dropChance:0.3},
+    {id:'void_lord',name:'Лорд пустоты',icon:'👾',hp:6000,attack:1800,defense:320,exp:20000,gold:9000,dropTier:4,dropChance:0.3}
+  ],boss:{id:'v_boss2',name:'Абсолют',icon:'🌌',hp:50000,attack:2500,defense:500,exp:50000,gold:30000,dropTier:4,dropChance:0.5,bossRespawnMs:30*60*1000,extraDrops:[{id:'scroll_divine',chance:0.3},{id:'scroll_armor_divine',chance:0.3}]}}
+];
+
+/* ===== PLAYER ===== */
+var player = {
+  name:'Герой',class:null,level:1,exp:0,expNext:20,gold:0,hp:120,maxHp:120,
+  baseAttack:15,baseDefense:0,statPoints:0,
+  stats:{str:0,agi:0,vit:0},
+  inventory:[],equipped:{weapon:null,armor:null,helm:null,gloves:null,boots:null},defeatedMonsters:[]
+};
+
+var currentLocationId='forest';
+var currentMonster=null;
+var currentMonsterTemplate=null;
+var autoAttackTimer=null;
+var skillCooldowns={};
+var killCount=0;
+var regenTimer=null;
+var bossTimers={};
+var upgradeTargetIdx=-1;
+var currentInvCat='all';
+var currentShopCat='all';
+
+/* ===== ФУНКЦИИ ===== */
+function showScreen(id){
+  var all=document.querySelectorAll('.screen');
+  for(var i=0;i<all.length;i++) all[i].classList.remove('active');
+  var el=document.getElementById(id);
+  if(el) el.classList.add('active');
+  if(id==='screen-main') startRegen(); else stopRegen();
+}
+
+function switchTab(tab){
+  document.getElementById('tab-hero').style.display=(tab==='hero')?'block':'none';
+  document.getElementById('tab-inventory').style.display=(tab==='inventory')?'block':'none';
+  document.getElementById('tab-shop').style.display=(tab==='shop')?'block':'none';
+  var btns=document.querySelectorAll('.nav-bar button');
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove('active-nav');
+  var nb=document.getElementById('nav-'+tab);
+  if(nb) nb.classList.add('active-nav');
+  if(tab==='inventory'){renderCharStats();renderInventory();}
+  if(tab==='shop'){renderShop();renderSellList();}
+}
+
+function switchInvCat(cat, btn){
+  currentInvCat=cat;
+  var btns=document.getElementById('inv-cat-bar').children;
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove('active-cat');
+  if(btn) btn.classList.add('active-cat');
+  renderInventory();
+}
+function switchShopCat(cat, btn){
+  currentShopCat=cat;
+  var btns=document.getElementById('shop-cat-bar').children;
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove('active-cat');
+  if(btn) btn.classList.add('active-cat');
+  renderShop();
+}
+
+function startRegen(){
+  stopRegen();
+  regenTimer=setInterval(function(){
+    if(player.hp<player.maxHp){player.hp=Math.min(player.maxHp,player.hp+2);updateMainScreen();}
+    updateBossTimersUI();
+  },1000);
+}
+function stopRegen(){if(regenTimer){clearInterval(regenTimer);regenTimer=null;}}
+
+function restAtCamp(){
+  if(player.hp>=player.maxHp){alert('HP уже полное!');return;}
+  var cost=Math.max(5,Math.floor((player.maxHp-player.hp)/2));
+  if(player.gold>=cost){player.gold-=cost;player.hp=player.maxHp;updateMainScreen();saveProgress();alert('Отдых стоил '+cost+' 🪙. HP восстановлено!');}
+  else{player.hp=Math.min(player.maxHp,player.hp+30);updateMainScreen();saveProgress();alert('Денег нет. +30 HP.');}
+}
+
+function chooseClass(cls){
+  try{
+    player.class=cls;
+    player.equipped={weapon:null,armor:null,helm:null,gloves:null,boots:null};
+    player.inventory=[{id:'p_small',qty:3}];
+    if(cls==='warrior'){player.baseAttack=15;player.maxHp=150;}
+    else if(cls==='mage'){player.baseAttack=30;player.maxHp=80;}
+    else if(cls==='archer'){player.baseAttack=22;player.maxHp=110;}
+    else{player.baseAttack=28;player.maxHp=90;}
+    player.hp=player.maxHp;
+    updateMainScreen();
+    renderLocations();
+    selectLocation('forest');
+    showScreen('screen-main');
+    saveProgress();
+  }catch(e){alert('Ошибка в chooseClass: '+e.message);console.error(e);}
+}
+
+function getEquippedBonus(){
+  var sumAtk=0, sumDef=0;
+  var slots=['weapon','armor','helm','gloves','boots'];
+  for(var i=0;i<slots.length;i++){
+    var eq=player.equipped[slots[i]];
+    if(eq&&ITEMS[eq.id]){
+      var it=ITEMS[eq.id];
+      var up=eq.upgrade||0;
+      if(it.attack) sumAtk+=it.attack+up*2;
+      if(it.defense) sumDef+=it.defense+up*2;
+    }
+  }
+  return {atk:sumAtk,def:sumDef};
+}
+function getTotalAttack(){var b=getEquippedBonus();return player.baseAttack+player.stats.str*2+b.atk;}
+function getTotalDefense(){var b=getEquippedBonus();return player.baseDefense+b.def;}
+function getCritChance(){return 0.05+player.stats.agi*0.02;}
+
+function updateMainScreen(){
+  document.getElementById('player-name').textContent=player.name;
+  document.getElementById('player-class').textContent=(player.class==='warrior')?'⚔️ Воин':(player.class==='mage')?'🔮 Маг':(player.class==='archer')?'🏹 Лучник':'🗡️ Ассасин';
+  document.getElementById('level').textContent=player.level;
+  document.getElementById('exp').textContent=player.exp;
+  document.getElementById('exp-next').textContent=player.expNext;
+  document.getElementById('gold').textContent=player.gold;
+  document.getElementById('player-hp').textContent=player.hp;
+  document.getElementById('player-maxhp').textContent=player.maxHp;
+  document.getElementById('player-hp-bar').style.width=(player.hp/player.maxHp*100)+'%';
+  document.getElementById('player-attack').textContent=getTotalAttack();
+  document.getElementById('player-defense').textContent=getTotalDefense();
+  document.getElementById('stat-points').textContent=player.statPoints;
+  var pct=(player.expNext>0)?Math.floor(player.exp/player.expNext*100):0;
+  var eb=document.getElementById('player-exp-bar'); if(eb) eb.style.width=Math.min(100,pct)+'%';
+  var et=document.getElementById('exp-main-text'); if(et) et.textContent=player.exp+' / '+player.expNext+' ('+pct+'%)';
+}
+
+function renderCharStats(){
+  var c=document.getElementById('char-stats'); if(!c) return;
+  var w=player.equipped.weapon, a=player.equipped.armor, h=player.equipped.helm, g=player.equipped.gloves, b=player.equipped.boots;
+  var wN=(w&&ITEMS[w.id])?(ITEMS[w.id].name+' +'+(w.upgrade||0)):'—';
+  var aN=(a&&ITEMS[a.id])?(ITEMS[a.id].name+' +'+(a.upgrade||0)):'—';
+  var hN=(h&&ITEMS[h.id])?(ITEMS[h.id].name+' +'+(h.upgrade||0)):'—';
+  var gN=(g&&ITEMS[g.id])?(ITEMS[g.id].name+' +'+(g.upgrade||0)):'—';
+  var bN=(b&&ITEMS[b.id])?(ITEMS[b.id].name+' +'+(b.upgrade||0)):'—';
+  var crit=Math.round(getCritChance()*100);
+  var ep=(player.expNext>0)?Math.floor(player.exp/player.expNext*100):0;
+  var rows=[
+    ['🧙 Класс',(player.class==='warrior')?'Воин':(player.class==='mage')?'Маг':(player.class==='archer')?'Лучник':'Ассасин'],
+    ['⭐ Уровень',player.level],
+    ['❤️ HP',player.hp+' / '+player.maxHp],
+    ['⚔️ Атака',getTotalAttack()],
+    ['🛡️ Защита',getTotalDefense()],
+    ['🎯 Крит',crit+'%'],
+    ['🪙 Золото',player.gold],
+    ['📈 Опыт',player.exp+' / '+player.expNext+' ('+ep+'%)'],
+    ['💪 Сила',player.stats.str+' (+'+(player.stats.str*2)+' атк)'],
+    ['🏃 Ловкость',player.stats.agi+' (+'+(player.stats.agi*2)+'% крит)'],
+    ['❤️ Выносливость',player.stats.vit+' (+'+(player.stats.vit*15)+' HP)'],
+    ['🎯 Очков',player.statPoints]
+  ];
+  var html='';
+  for(var i=0;i<rows.length;i++) html+='<div class="char-stat"><span>'+rows[i][0]+'</span><b>'+rows[i][1]+'</b></div>';
+  c.innerHTML=html;
+}
+
+function renderLocations(){
+  var c=document.getElementById('locations-list'); c.innerHTML='';
+  for(var i=0;i<locations.length;i++){
+    var loc=locations[i];
+    var b=document.createElement('button');
+    b.className='location-btn'+(loc.id===currentLocationId?' active-loc':'');
+    b.textContent=loc.name;
+    b.setAttribute('data-loc',loc.id);
+    b.onclick=function(){selectLocation(this.getAttribute('data-loc'));};
+    c.appendChild(b);
+  }
+}
+function selectLocation(id){
+  currentLocationId=id;
+  renderLocations(); renderMonsters(); renderBoss(); ensureBossTimer(id);
+}
+
+function renderMonsters(){
+  var loc=null;
+  for(var i=0;i<locations.length;i++) if(locations[i].id===currentLocationId) loc=locations[i];
+  if(!loc) return;
+  document.getElementById('current-location-name').textContent=loc.name;
+  var c=document.getElementById('monsters-list'); c.innerHTML='';
+  for(var j=0;j<loc.monsters.length;j++){
+    var m=loc.monsters[j];
+    var b=document.createElement('button');
+    b.className='monster-btn';
+    b.textContent=(m.icon||'👹')+' '+m.name+' · HP '+m.hp+' · Атк '+m.attack+' · Защ '+(m.defense||0);
+    b.setAttribute('data-mon',m.id);
+    b.onclick=function(){
+      var mid=this.getAttribute('data-mon');
+      for(var k=0;k<loc.monsters.length;k++) if(loc.monsters[k].id===mid) startBattle(loc.monsters[k],false);
+    };
+    c.appendChild(b);
+  }
+}
+
+function ensureBossTimer(id){
+  var loc=null;
+  for(var i=0;i<locations.length;i++) if(locations[i].id===id) loc=locations[i];
+  if(!loc||!loc.boss) return;
+  if(!bossTimers[id]) bossTimers[id]={readyAt:Date.now()+loc.boss.bossRespawnMs};
+}
+function isBossReady(id){var t=bossTimers[id];return t&&Date.now()>=t.readyAt;}
+function formatTimeLeft(ms){
+  var total=Math.max(0,Math.ceil(ms/1000));
+  var m=Math.floor(total/60),s=total%60;
+  return m+':'+(s<10?'0':'')+s;
+}
+function updateBossTimersUI(){
+  var loc=null;
+  for(var i=0;i<locations.length;i++) if(locations[i].id===currentLocationId) loc=locations[i];
+  if(!loc||!loc.boss) return;
+  var b=document.getElementById('boss-btn'); if(!b) return;
+  var t=bossTimers[currentLocationId]; if(!t) return;
+  if(Date.now()>=t.readyAt){if(b.disabled) renderBoss();}
+  else{b.textContent='⏳ Босс через '+formatTimeLeft(t.readyAt-Date.now());b.disabled=true;}
+}
+function renderBoss(){
+  var loc=null;
+  for(var i=0;i<locations.length;i++) if(locations[i].id===currentLocationId) loc=locations[i];
+  if(!loc||!loc.boss) return;
+  var boss=loc.boss;
+  var c=document.getElementById('boss-list'); c.innerHTML='';
+  ensureBossTimer(currentLocationId);
+  var b=document.createElement('button');
+  b.className='boss-btn'; b.id='boss-btn';
+  if(isBossReady(currentLocationId)){
+    b.textContent=(boss.icon||'👑')+' '+boss.name+' · HP '+boss.hp+' · Атк '+boss.attack+' · Защ '+(boss.defense||0);
+    b.onclick=function(){startBattle(boss,true);};
+  }else{
+    var t=bossTimers[currentLocationId];
+    b.textContent='⏳ Босс через '+formatTimeLeft(t.readyAt-Date.now());
+    b.disabled=true;
+  }
+  c.appendChild(b);
+}
+
+function renderInventory(){
+  var eq=document.getElementById('equipped-list'); eq.innerHTML='';
+  var slots=['weapon','armor','helm','gloves','boots'];
+  var names={weapon:'Оружие',armor:'Доспех',helm:'Шлем',gloves:'Перчатки',boots:'Сапоги'};
+  var icons={weapon:'🗡️',armor:'🛡️',helm:'🪖',gloves:'🧤',boots:'👢'};
+  for(var s=0;s<slots.length;s++){
+    var slot=slots[s];
+    var it=player.equipped[slot];
+    var div=document.createElement('div');
+    if(it&&ITEMS[it.id]){
+      var d=ITEMS[it.id];
+      var up=it.upgrade||0;
+      div.className='equip-slot';
+      div.innerHTML='<div class="slot-icon">'+(d.icon||icons[slot])+'</div><div class="slot-name">'+d.name+(up>0?' +'+up:'')+'</div><div class="slot-desc">'+d.desc+'</div>';
+      var btn=document.createElement('button'); btn.className='small equip-btn'; btn.textContent='Снять';
+      btn.setAttribute('data-slot',slot);
+      btn.onclick=function(){unequipItem(this.getAttribute('data-slot'));};
+      div.appendChild(btn);
+    }else{
+      div.className='equip-slot empty';
+      div.innerHTML='<div class="slot-icon">'+icons[slot]+'</div><div class="slot-name">'+names[slot]+'</div><div class="slot-desc">— пусто —</div>';
+    }
+    eq.appendChild(div);
+  }
+
+  var inv=document.getElementById('inventory-list'); inv.innerHTML='';
+  var filtered=[];
+  for(var i=0;i<player.inventory.length;i++){
+    var entry=player.inventory[i];
+    var d2=ITEMS[entry.id];
+    if(!d2) continue;
+    if(currentInvCat==='all') filtered.push({entry:entry, idx:i, item:d2});
+    else if(currentInvCat==='weapon' && d2.type==='weapon') filtered.push({entry:entry, idx:i, item:d2});
+    else if(currentInvCat==='armor' && d2.type==='armor') filtered.push({entry:entry, idx:i, item:d2});
+    else if(currentInvCat==='potion' && d2.type==='potion') filtered.push({entry:entry, idx:i, item:d2});
+    else if(currentInvCat==='scroll' && d2.type==='scroll') filtered.push({entry:entry, idx:i, item:d2});
+  }
+  if(filtered.length===0){inv.innerHTML='<p style="text-align:center;color:#8a8ab0;padding:20px">Тут пусто</p>';return;}
+  for(var j=0;j<filtered.length;j++){
+    var f=filtered[j];
+    var e=f.entry, d3=f.item, idx=f.idx;
+    var row=document.createElement('div'); row.className='item-row';
+    var ic=document.createElement('div'); ic.className='item-icon'; ic.textContent=d3.icon||'❓';
+    var inf=document.createElement('div'); inf.className='item-info';
+    var up3=e.upgrade||0;
+    var upTxt3=(up3>0)?' +'+up3:'';
+    inf.innerHTML='<b>'+d3.name+upTxt3+'</b> ×'+e.qty+'<br><span class="item-desc">'+d3.desc+(up3>0?' (+'+(up3*2)+' стата)':'')+'</span>';
+    row.appendChild(ic); row.appendChild(inf);
+    var actions=document.createElement('div'); actions.className='item-actions';
+    if(d3.type==='potion'){
+      var b1=document.createElement('button'); b1.className='small use-btn'; b1.textContent='Испить';
+      b1.setAttribute('data-idx',idx);
+      b1.onclick=function(){usePotion(parseInt(this.getAttribute('data-idx'),10));};
+      actions.appendChild(b1);
+    }else if(d3.type==='weapon'||d3.type==='armor'){
+      var b2=document.createElement('button'); b2.className='small equip-btn'; b2.textContent='Надеть';
+      b2.setAttribute('data-idx',idx);
+      b2.onclick=function(){equipItem(parseInt(this.getAttribute('data-idx'),10));};
+      actions.appendChild(b2);
+      var b3=document.createElement('button'); b3.className='small';
+      b3.style.background='linear-gradient(145deg,#8a6a2e,#6a4a1e)'; b3.textContent='✨';
+      b3.setAttribute('data-idx',idx);
+      b3.onclick=function(){openUpgradeModal(parseInt(this.getAttribute('data-idx'),10));};
+      actions.appendChild(b3);
+    }
+    row.appendChild(actions);
+    inv.appendChild(row);
+  }
+}
+
+function addItem(id,qty){
+  qty=qty||1;
+  var it=ITEMS[id];
+  if(it&&(it.type==='weapon'||it.type==='armor')){
+    for(var i=0;i<qty;i++) player.inventory.push({id:id,qty:1,upgrade:0});
+    return;
+  }
+  for(var j=0;j<player.inventory.length;j++){
+    if(player.inventory[j].id===id){player.inventory[j].qty+=qty;return;}
+  }
+  player.inventory.push({id:id,qty:qty});
+}
+function removeItemById(id,qty){
+  qty=qty||1; var rem=0;
+  for(var i=player.inventory.length-1;i>=0&&rem<qty;i--){
+    if(player.inventory[i].id===id){
+      if((player.inventory[i].qty||1)>1) player.inventory[i].qty--;
+      else player.inventory.splice(i,1);
+      rem++;
+    }
+  }
+}
+function countItem(id){
+  var sum=0;
+  for(var i=0;i<player.inventory.length;i++) if(player.inventory[i].id===id) sum+=(player.inventory[i].qty||1);
+  return sum;
+}
+function usePotion(idx){
+  var e=player.inventory[idx]; if(!e) return;
+  var it=ITEMS[e.id]; if(!it||it.type!=='potion') return;
+  if(player.hp>=player.maxHp){alert('HP уже полное!');return;}
+  player.hp=Math.min(player.maxHp,player.hp+it.heal);
+  if(e.qty>1) e.qty--; else player.inventory.splice(idx,1);
+  updateMainScreen(); renderCharStats(); renderInventory(); saveProgress();
+}
+function equipItem(idx){
+  var e=player.inventory[idx]; if(!e) return;
+  var it=ITEMS[e.id]; if(!it) return;
+  if(it.class&&it.class!==player.class){alert('Не для твоего класса!');return;}
+  var slot=it.slot;
+  if(player.equipped[slot]){
+    var old=player.equipped[slot];
+    player.inventory.push({id:old.id,qty:1,upgrade:old.upgrade||0});
+  }
+  player.equipped[slot]={id:e.id,upgrade:e.upgrade||0};
+  player.inventory.splice(idx,1);
+  updateMainScreen(); renderCharStats(); renderInventory(); saveProgress();
+}
+function unequipItem(slot){
+  var e=player.equipped[slot]; if(!e) return;
+  player.inventory.push({id:e.id,qty:1,upgrade:e.upgrade||0});
+  player.equipped[slot]=null;
+  updateMainScreen(); renderCharStats(); renderInventory(); saveProgress();
+}
+
+function getBaseUpgradeChance(up,tier,isArmor){
+  var t=up+1;
+  if(t<=3) return 1.0;
+  var base;
+  switch(t){case 4:base=0.85;break;case 5:base=0.70;break;case 6:base=0.55;break;case 7:base=0.40;break;case 8:base=0.25;break;case 9:base=0.15;break;default:base=0.10;}
+  var pen=(tier-1)*0.05;
+  if(isArmor) pen+=0.04;
+  return Math.max(0.02,base-pen);
+}
+function openUpgradeModal(idx){
+  var e=player.inventory[idx]; if(!e) return;
+  var it=ITEMS[e.id]; if(!it||(it.type!=='weapon'&&it.type!=='armor')) return;
+  upgradeTargetIdx=idx;
+  var up=e.upgrade||0;
+  var isArmor=(it.type==='armor');
+  document.getElementById('upgrade-title').textContent=isArmor?'✨ Усиление доспеха':'✨ Усиление оружия';
+  document.getElementById('upgrade-weapon-name').textContent=it.icon+' '+it.name+' +'+up;
+  document.getElementById('upgrade-current').textContent='Текущий уровень: +'+up;
+  document.getElementById('upgrade-stats').textContent=(isArmor?'Защита: ':'Атака: ')+(isArmor?it.defense:it.attack)+(up>0?' + '+(up*2)+' от усиления':'');
+  document.getElementById('upgrade-log').textContent='';
+  
+  var sn=isArmor?'scroll_armor':'scroll_weapon';
+  var sd=isArmor?'scroll_armor_divine':'scroll_divine';
+  document.getElementById('upgrade-btn-normal').textContent=(isArmor?'📜 Усилить свитком доспеха':'📜 Усилить свитком оружия');
+  document.getElementById('upgrade-btn-divine').textContent=(isArmor?'🌟 Усилить бож. свитком доспеха':'🌟 Усилить бож. свитком оружия');
+
+  if(up>=9){
+    document.getElementById('upgrade-chance').textContent='Максимум +9';
+    document.getElementById('upgrade-btn-normal').disabled=true;
+    document.getElementById('upgrade-btn-divine').disabled=true;
+  }else{
+    var nc=getBaseUpgradeChance(up,it.tier,isArmor);
+    var dc=Math.min(1,nc+0.10);
+    var nC=countItem(sn), dC=countItem(sd);
+    document.getElementById('upgrade-chance').innerHTML='Обычный: <b>'+Math.round(nc*100)+'%</b> ('+nC+')<br>Божественный: <b>'+Math.round(dc*100)+'%</b> ('+dC+')';
+    document.getElementById('upgrade-btn-normal').disabled=(nC<=0);
+    document.getElementById('upgrade-btn-divine').disabled=(dC<=0);
+  }
+  document.getElementById('upgrade-modal').style.display='block';
+}
+function closeUpgradeModal(){
+  document.getElementById('upgrade-modal').style.display='none';
+  upgradeTargetIdx=-1;
+}
+function doUpgrade(type){
+  if(upgradeTargetIdx<0) return;
+  var e=player.inventory[upgradeTargetIdx]; if(!e){closeUpgradeModal();return;}
+  var it=ITEMS[e.id]; if(!it||(it.type!=='weapon'&&it.type!=='armor')) return;
+  var isArmor=(it.type==='armor');
+  var up=e.upgrade||0;
+  if(up>=9) return;
+  var sid=(type==='divine')?(isArmor?'scroll_armor_divine':'scroll_divine'):(isArmor?'scroll_armor':'scroll_weapon');
+  if(countItem(sid)<=0){document.getElementById('upgrade-log').textContent='Нет свитков!';return;}
+  
+  var ch=getBaseUpgradeChance(up,it.tier,isArmor);
+  if(type==='divine') ch=Math.min(1,ch+0.10);
+  removeItemById(sid,1);
+  var ok=Math.random()<ch;
+  if(ok){
+    e.upgrade=up+1;
+    document.getElementById('upgrade-log').textContent='✅ Успех! '+it.name+' теперь +'+e.upgrade;
+  }else{
+    var r=Math.random();
+    if(r<0.40){
+      player.inventory.splice(upgradeTargetIdx,1);
+      var slot=it.slot;
+      if(player.equipped[slot]&&player.equipped[slot].id===e.id) player.equipped[slot]=null;
+      updateMainScreen(); renderCharStats(); renderInventory(); saveProgress();
+      document.getElementById('upgrade-weapon-name').textContent='—';
+      document.getElementById('upgrade-current').textContent='Предмет сломан!';
+      document.getElementById('upgrade-stats').textContent='';
+      document.getElementById('upgrade-chance').textContent='';
+      document.getElementById('upgrade-btn-normal').disabled=true;
+      document.getElementById('upgrade-btn-divine').disabled=true;
+      document.getElementById('upgrade-log').textContent='💥 Неудача! '+it.name+' сломано.';
+      return;
+    }else if(r<0.70){
+      e.upgrade=Math.max(0,up-1);
+      document.getElementById('upgrade-log').textContent='❌ Неудача! Уровень -1 (теперь +'+e.upgrade+')';
+    }else{
+      document.getElementById('upgrade-log').textContent='❌ Неудача! Уровень остался +'+up;
+    }
+  }
+  var slot2=it.slot;
+  if(player.equipped[slot2]&&player.equipped[slot2].id===e.id) player.equipped[slot2].upgrade=e.upgrade;
+  updateMainScreen(); renderCharStats(); renderInventory(); saveProgress();
+  openUpgradeModal(upgradeTargetIdx);
+}
+
+function rollDrop(maxTier,chance){
+  if(Math.random()>=chance) return null;
+  var pool=[];
+  for(var k in ITEMS){
+    if(!Object.prototype.hasOwnProperty.call(ITEMS,k)) continue;
+    var it=ITEMS[k];
+    if(it.type==='scroll') continue;
+    if(it.type==='potion'&&it.tier>maxTier) continue;
+    if(it.tier>maxTier) continue;
+    if(it.class&&it.class!==player.class) continue;
+    pool.push(it);
+  }
+  if(pool.length===0) return null;
+  var total=0;
+  for(var i=0;i<pool.length;i++){
+    var t=pool[i].tier;
+    var w=(t===1)?60:(t===2)?25:(t===3)?10:(t===4)?5:1;
+    total+=w;
+  }
+  var r=Math.random()*total;
+  for(var j=0;j<pool.length;j++){
+    var t2=pool[j].tier;
+    var w2=(t2===1)?60:(t2===2)?25:(t2===3)?10:(t2===4)?5:1;
+    r-=w2;
+    if(r<=0) return pool[j];
+  }
+  return pool[pool.length-1];
+}
+function rollExtraDrops(list){
+  var res=[];
+  if(!list) return res;
+  for(var i=0;i<list.length;i++) if(Math.random()<list[i].chance) res.push(list[i].id);
+  return res;
+}
+
+function renderShop(){
+  var c=document.getElementById('shop-list'); c.innerHTML='';
+  var filtered=[];
+  for(var k in ITEMS){
+    if(!Object.prototype.hasOwnProperty.call(ITEMS,k)) continue;
+    var it=ITEMS[k];
+    if(it.class&&it.class!==player.class) continue;
+    // В магазине только tier 1 (базовые), зелья и свитки
+    if((it.type==='weapon'||it.type==='armor') && it.tier>1) continue;
+    
+    if(currentShopCat==='all') filtered.push(it);
+    else if(currentShopCat==='weapon' && it.type==='weapon') filtered.push(it);
+    else if(currentShopCat==='armor' && it.type==='armor') filtered.push(it);
+    else if(currentShopCat==='potion' && it.type==='potion') filtered.push(it);
+    else if(currentShopCat==='scroll' && it.type==='scroll') filtered.push(it);
+  }
+  if(filtered.length===0){c.innerHTML='<p style="text-align:center;color:#8a8ab0;padding:20px">Тут пусто</p>';return;}
+  for(var i=0;i<filtered.length;i++){
+    var it=filtered[i];
+    var row=document.createElement('div'); row.className='item-row';
+    var ic=document.createElement('div'); ic.className='item-icon'; ic.textContent=it.icon||'❓';
+    var inf=document.createElement('div'); inf.className='item-info';
+    inf.innerHTML='<b>'+it.name+'</b> — '+it.price+' 🪙<br><span class="item-desc">'+it.desc+'</span>';
+    var b=document.createElement('button'); b.className='small buy-btn'; b.textContent='Купить';
+    b.setAttribute('data-id',it.id);
+    b.onclick=function(){buyItem(this.getAttribute('data-id'));};
+    row.appendChild(ic); row.appendChild(inf); row.appendChild(b);
+    c.appendChild(row);
+  }
+}
+function buyItem(id){
+  var it=ITEMS[id];
+  if(player.gold<it.price){alert('Не хватает золота!');return;}
+  player.gold-=it.price; addItem(id,1);
+  updateMainScreen(); renderCharStats(); renderShop(); renderSellList(); saveProgress();
+  alert('Куплено: '+it.name);
+}
+function getSellPrice(it){return Math.max(1,Math.floor(it.price*0.5));}
+function renderSellList(){
+  var c=document.getElementById('sell-list'); if(!c) return; c.innerHTML='';
+  if(player.inventory.length===0){c.innerHTML='<p style="text-align:center;color:#8a8ab0">Нечего продавать</p>';return;}
+  for(var i=0;i<player.inventory.length;i++){
+    var e=player.inventory[i];
+    var d=ITEMS[e.id]; if(!d) continue;
+    var row=document.createElement('div'); row.className='item-row';
+    var ic=document.createElement('div'); ic.className='item-icon'; ic.textContent=d.icon||'❓';
+    var inf=document.createElement('div'); inf.className='item-info';
+    var sp=getSellPrice(d);
+    inf.innerHTML='<b>'+d.name+'</b> ×'+e.qty+'<br><span class="item-desc">'+d.desc+' · Продажа: '+sp+' 🪙</span>';
+    var b=document.createElement('button'); b.className='small sell-btn'; b.textContent='Продать ('+sp+'🪙)';
+    b.setAttribute('data-idx',i);
+    b.onclick=function(){sellItem(parseInt(this.getAttribute('data-idx'),10));};
+    row.appendChild(ic); row.appendChild(inf); row.appendChild(b);
+    c.appendChild(row);
+  }
+}
+function sellItem(idx){
+  var e=player.inventory[idx]; if(!e) return;
+  var d=ITEMS[e.id]; if(!d) return;
+  var sp=getSellPrice(d);
+  player.gold+=sp;
+  if(e.qty>1) e.qty--; else player.inventory.splice(idx,1);
+  updateMainScreen(); renderCharStats(); renderSellList(); renderShop(); saveProgress();
+}
+
+function openStats(){
+  if(player.statPoints<=0){alert('Нет свободных очков!');return;}
+  document.getElementById('stats-points-left').textContent=player.statPoints;
+  document.getElementById('stat-str').textContent=player.stats.str;
+  document.getElementById('stat-agi').textContent=player.stats.agi;
+  document.getElementById('stat-vit').textContent=player.stats.vit;
+  showScreen('screen-stats');
+}
+function addStat(type){
+  if(player.statPoints<=0) return;
+  player.statPoints--; player.stats[type]++;
+  if(type==='vit'){player.maxHp+=15;player.hp+=15;}
+  document.getElementById('stats-points-left').textContent=player.statPoints;
+  document.getElementById('stat-str').textContent=player.stats.str;
+  document.getElementById('stat-agi').textContent=player.stats.agi;
+  document.getElementById('stat-vit').textContent=player.stats.vit;
+  updateMainScreen(); saveProgress();
+}
+function closeStats(){showScreen('screen-main');}
+
+function getAvailableSkills(){
+  var list=SKILLS[player.class]||[];
+  var res=[];
+  for(var i=0;i<list.length;i++) if(player.level>=list[i].unlockLevel) res.push(list[i]);
+  return res;
+}
+function renderSkills(){
+  var g=document.getElementById('skills-grid'); g.innerHTML='';
+  var sk=getAvailableSkills();
+  if(sk.length===0){g.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#8a8ab0;font-size:12px">Скиллы откроются на 10 уровне</p>';return;}
+  for(var i=0;i<sk.length;i++){
+    var s=sk[i];
+    var b=document.createElement('button');
+    b.className='skill-btn'; b.id='skill-'+s.id; b.textContent=s.name;
+    b.setAttribute('data-skill',s.id);
+    b.onclick=function(){useSkill(this.getAttribute('data-skill'));};
+    g.appendChild(b);
+  }
+  updateSkillButtons();
+}
+function updateSkillButtons(){
+  var sk=getAvailableSkills(); var now=Date.now();
+  for(var i=0;i<sk.length;i++){
+    var s=sk[i];
+    var b=document.getElementById('skill-'+s.id); if(!b) continue;
+    var ready=skillCooldowns[s.id]||0;
+    if(now<ready){var left=Math.ceil((ready-now)/1000); b.disabled=true; b.textContent=s.name+' ('+left+'с)';}
+    else{b.disabled=false; b.textContent=s.name;}
+  }
+}
+function useSkill(skillId){
+  if(!currentMonster||currentMonster.hp<=0) return;
+  var list=SKILLS[player.class]||[];
+  var sk=null;
+  for(var i=0;i<list.length;i++) if(list[i].id===skillId) sk=list[i];
+  if(!sk) return;
+  if(player.level<sk.unlockLevel) return;
+  var now=Date.now();
+  if((skillCooldowns[sk.id]||0)>now) return;
+  skillCooldowns[sk.id]=now+sk.cooldown;
+  if(sk.type==='damage'){
+    var dmg=Math.floor(getTotalAttack()*sk.mult);
+    currentMonster.hp-=dmg;
+    addBattleLog(sk.name+': '+dmg+' урона!');
+    if(currentMonster.hp<=0) onMonsterDefeated(); else updateBattleUI();
+  }else{
+    var heal=Math.floor(player.maxHp*sk.healPct);
+    player.hp=Math.min(player.maxHp,player.hp+heal);
+    addBattleLog(sk.name+': +'+heal+' HP');
+    updateBattleUI();
+  }
+  updateSkillButtons();
+}
+
+function startBattle(template,isBoss){
+  stopAutoAttack(); stopRegen();
+  if(isBoss){
+    var loc=null;
+    for(var i=0;i<locations.length;i++) if(locations[i].boss&&locations[i].boss.id===template.id) loc=locations[i];
+    if(loc&&!isBossReady(loc.id)){alert('Босс ещё не появился!');return;}
+  }
+  currentMonsterTemplate=template;
+  currentMonsterTemplate._isBoss=!!isBoss;
+  killCount=0;
+  spawnMonster();
+  showScreen('screen-battle');
+}
+function spawnMonster(){
+  if(!currentMonsterTemplate) return;
+  var t=currentMonsterTemplate;
+  currentMonster={id:t.id,name:t.name,icon:t.icon,hp:t.hp,maxHp:t.hp,attack:t.attack,defense:t.defense||0,exp:t.exp,gold:t.gold,dropTier:t.dropTier,dropChance:t.dropChance,extraDrops:t.extraDrops,_isBoss:t._isBoss};
+  skillCooldowns={};
+  document.getElementById('monster-name').textContent=(currentMonster.icon||'👹')+' '+currentMonster.name+(currentMonster._isBoss?' 👑':'');
+  document.getElementById('monster-hp').textContent=currentMonster.hp;
+  document.getElementById('monster-maxhp').textContent=currentMonster.maxHp;
+  document.getElementById('monster-hp-bar').style.width='100%';
+  document.getElementById('battle-player-hp').textContent=player.hp;
+  document.getElementById('battle-player-maxhp').textContent=player.maxHp;
+  document.getElementById('battle-player-hp-bar').style.width=(player.hp/player.maxHp*100)+'%';
+  updateBattleExpUI();
+  renderSkills();
+}
+function updateBattleExpUI(){
+  var pct=(player.expNext>0)?Math.floor(player.exp/player.expNext*100):0;
+  var b=document.getElementById('battle-exp-bar'); if(b) b.style.width=Math.min(100,pct)+'%';
+  var t=document.getElementById('exp-battle-text'); if(t) t.textContent=player.exp+' / '+player.expNext+' ('+pct+'%)';
+}
+function addBattleLog(txt){document.getElementById('battle-log').textContent=txt;}
+function updateBattleUI(){
+  document.getElementById('monster-hp').textContent=Math.max(0,currentMonster.hp);
+  document.getElementById('monster-hp-bar').style.width=Math.max(0,currentMonster.hp/currentMonster.maxHp*100)+'%';
+  document.getElementById('battle-player-hp').textContent=player.hp;
+  document.getElementById('battle-player-hp-bar').style.width=(player.hp/player.maxHp*100)+'%';
+  updateBattleExpUI();
+}
+function attack(){
+  if(!currentMonster||currentMonster.hp<=0){
+    if(currentMonsterTemplate&&!currentMonsterTemplate._isBoss){spawnMonster();addBattleLog('Новый '+currentMonster.name+'!');}
+    return;
+  }
+  var dmg=Math.max(1,getTotalAttack()-2-(currentMonster.defense||0));
+  var crit=Math.random()<getCritChance();
+  if(crit) dmg=Math.floor(dmg*2);
+  currentMonster.hp-=dmg;
+  if(currentMonster.hp<=0){onMonsterDefeated();return;}
+  var mdmg=Math.max(1,currentMonster.attack-getTotalDefense());
+  player.hp-=mdmg;
+  if(player.hp<=0){
+    player.hp=0; updateBattleUI(); stopAutoAttack(); currentMonsterTemplate=null;
+    addBattleLog('Ты проиграл!');
+    setTimeout(function(){player.hp=player.maxHp;updateMainScreen();showScreen('screen-main');saveProgress();},2000);
+    return;
+  }
+  updateBattleUI();
+  addBattleLog('Ты: '+dmg+(crit?' (КРИТ!)':'')+'. Монстр: '+mdmg);
+}
+function onMonsterDefeated(){
+  currentMonster.hp=0; killCount++;
+  var log=currentMonster.name+' побеждён! +'+currentMonster.exp+' опыта, +'+currentMonster.gold+' золота.';
+  player.exp+=currentMonster.exp; player.gold+=currentMonster.gold;
+  if(currentMonster.dropTier&&currentMonster.dropChance){
+    var dr=rollDrop(currentMonster.dropTier,currentMonster.dropChance);
+    if(dr){addItem(dr.id,1);log+=' 🎁 '+dr.name+'!';}
+  }
+  var ex=rollExtraDrops(currentMonster.extraDrops);
+  for(var i=0;i<ex.length;i++){addItem(ex[i],1);log+=' 📜 '+ITEMS[ex[i]].name+'!';}
+  updateBattleUI(); checkLevelUp(); updateMainScreen(); saveProgress(); addBattleLog(log);
+  if(currentMonster._isBoss){
+    var loc=null;
+    for(var j=0;j<locations.length;j++) if(locations[j].boss&&locations[j].boss.id===currentMonster.id) loc=locations[j];
+    if(loc) bossTimers[loc.id]={readyAt:Date.now()+loc.boss.bossRespawnMs};
+    currentMonsterTemplate=null;
+    setTimeout(function(){showScreen('screen-main');renderBoss();},2000);
+  }else if(currentMonsterTemplate){
+    setTimeout(function(){if(currentMonsterTemplate){spawnMonster();addBattleLog('Новый '+currentMonster.name+' появился!');}},800);
+  }
+}
+
+function toggleAutoAttack(){if(autoAttackTimer) stopAutoAttack(); else startAutoAttack();}
+function startAutoAttack(){
+  if(autoAttackTimer) return;
+  autoAttackTimer=setInterval(function(){
+    if(!currentMonsterTemplate){stopAutoAttack();return;}
+    attack(); updateSkillButtons();
+  },1500);
+  var b=document.getElementById('auto-btn'); b.textContent='⏹️ Остановить'; b.className='stop-btn';
+}
+function stopAutoAttack(){
+  if(autoAttackTimer){clearInterval(autoAttackTimer);autoAttackTimer=null;}
+  var b=document.getElementById('auto-btn');
+  if(b){b.textContent='▶️ Автоатака';b.className='auto-btn';}
+}
+function usePotionInBattle(){
+  var idx=-1;
+  for(var i=0;i<player.inventory.length;i++){var it=ITEMS[player.inventory[i].id];if(it&&it.type==='potion'){idx=i;break;}}
+  if(idx===-1){alert('Нет зелий!');return;}
+  var e=player.inventory[idx]; var it2=ITEMS[e.id];
+  player.hp=Math.min(player.maxHp,player.hp+it2.heal);
+  if(e.qty>1) e.qty--; else player.inventory.splice(idx,1);
+  updateBattleUI(); addBattleLog('+'+it2.heal+' HP'); saveProgress();
+}
+function flee(){stopAutoAttack(); currentMonsterTemplate=null; currentMonster=null; showScreen('screen-main');}
+
+function checkLevelUp(){
+  var leveled=false;
+  while(player.exp>=player.expNext){
+    player.exp-=player.expNext; player.level++; player.expNext=Math.floor(player.expNext*1.5);
+    player.maxHp+=10; player.hp=player.maxHp; player.statPoints+=3; leveled=true;
+  }
+  if(leveled){alert('Уровень повышен! Теперь '+player.level+'. +3 очка.');renderSkills();}
+}
+
+function saveProgress(){
+  if(tg&&tg.CloudStorage){try{tg.CloudStorage.setItem('player',JSON.stringify(player))}catch(e){}}
+}
+function loadProgress(){
+  if(!tg||!tg.CloudStorage) return;
+  tg.CloudStorage.getItem('player').then(function(data){
+    if(!data) return;
+    try{
+      var L=JSON.parse(data);
+      for(var k in L) if(Object.prototype.hasOwnProperty.call(L,k)) player[k]=L[k];
+      if(!player.stats) player.stats={str:0,agi:0,vit:0};
+      if(!player.inventory) player.inventory=[];
+      if(!player.equipped) player.equipped={weapon:null,armor:null,helm:null,gloves:null,boots:null};
+      if(!player.equipped.helm) player.equipped.helm=null;
+      if(!player.equipped.gloves) player.equipped.gloves=null;
+      if(!player.equipped.boots) player.equipped.boots=null;
+      if(!player.defeatedMonsters) player.defeatedMonsters=[];
+      var slots=['weapon','armor','helm','gloves','boots'];
+      for(var s=0;s<slots.length;s++){
+        var eq=player.equipped[slots[s]];
+        if(typeof eq==='string') player.equipped[slots[s]]={id:eq,upgrade:0};
+      }
+      updateMainScreen(); renderLocations(); selectLocation('forest'); showScreen('screen-main');
+    }catch(e){console.error(e);}
+  });
+}
+
+try{if(tg&&tg.ready) tg.ready();}catch(e){}
+loadProgress();
+</script>
 </body>
 </html>
